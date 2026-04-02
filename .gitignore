@@ -20,6 +20,8 @@ local.properties
 
 # Android Studio / IntelliJ
 *.iml
+.idea/
+.kotlin/
 .idea/caches/
 .idea/libraries/
 .idea/modules.xml
