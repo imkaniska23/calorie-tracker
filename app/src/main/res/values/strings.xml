@@ -91,5 +91,9 @@
     <string name="delete_confirm_title">Confirm Delete</string>
     <string name="delete_food_item_confirm">Delete \"%1$s\"?</string>
     <string name="delete_meal_type_confirm">Delete \"%1$s\"?</string>
+    <string name="delete_food_item_blocked">Cannot delete this food item because it is used in saved meals.</string>
+    <string name="delete_meal_type_blocked">Cannot delete this meal type because it is used in saved meals.</string>
+    <string name="item_in_use_cannot_delete">Used in saved meals</string>
+    <string name="delete_failed_try_again">Could not delete item. Please try again.</string>
     <string name="error_fill_all_fields">Please fill in all required fields.</string>
 </resources>

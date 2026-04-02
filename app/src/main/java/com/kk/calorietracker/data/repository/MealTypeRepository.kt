@@ -15,6 +15,9 @@ class MealTypeRepository @Inject constructor(
     fun getAllMealTypes(): Flow<List<MealType>> =
         dao.getAllMealTypes().map { list -> list.map { it.toDomain() } }
 
+    fun getReferencedMealTypeIds(): Flow<Set<Long>> =
+        dao.getReferencedMealTypeIds().map { it.toSet() }
+
     suspend fun getMealTypeById(id: Long): MealType? =
         dao.getMealTypeById(id)?.toDomain()
 

@@ -1,5 +1,6 @@
 package com.kk.calorietracker.ui.food
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.kk.calorietracker.data.model.FoodItem
@@ -7,6 +8,7 @@ import com.kk.calorietracker.data.model.MeasurementUnit
 import com.kk.calorietracker.data.repository.FoodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -25,6 +27,7 @@ data class FoodUiState(
     val carbsG: String = "",
     val proteinG: String = "",
     val showDeleteConfirm: FoodItem? = null,
+    val referencedFoodItemIds: Set<Long> = emptySet(),
     val items: List<FoodItem> = emptyList(),
 )
 
@@ -45,6 +48,14 @@ class FoodViewModel @Inject constructor(
 
     val items: StateFlow<List<FoodItem>> = repository.getAllFoodItems()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    init {
+        viewModelScope.launch {
+            repository.getReferencedFoodItemIds().collect { referencedIds ->
+                _state.update { it.copy(referencedFoodItemIds = referencedIds) }
+            }
+        }
+    }
 
     fun onNameChange(value: String) = _state.update { it.copy(name = value) }
     fun onUnitChange(unit: MeasurementUnit) = _state.update { it.copy(measurementUnit = unit) }
@@ -70,11 +81,17 @@ class FoodViewModel @Inject constructor(
     fun onDeleteRequest(item: FoodItem) = _state.update { it.copy(showDeleteConfirm = item) }
     fun onDeleteDismiss() = _state.update { it.copy(showDeleteConfirm = null) }
 
-    fun onDeleteConfirm(item: FoodItem, successMsg: String) {
+    fun onDeleteConfirm(item: FoodItem, successMsg: String, blockedMsg: String, failedMsg: String) {
         _state.update { it.copy(showDeleteConfirm = null) }
         viewModelScope.launch {
-            repository.deleteFoodItem(item)
-            _events.send(FoodEvent.ShowSnackbar(successMsg))
+            try {
+                repository.deleteFoodItem(item)
+                _events.send(FoodEvent.ShowSnackbar(successMsg))
+            } catch (_: SQLiteConstraintException) {
+                _events.send(FoodEvent.ShowSnackbar(blockedMsg))
+            } catch (_: Exception) {
+                _events.send(FoodEvent.ShowSnackbar(failedMsg))
+            }
         }
     }
 

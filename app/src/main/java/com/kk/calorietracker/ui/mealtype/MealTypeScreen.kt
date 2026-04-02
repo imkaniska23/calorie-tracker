@@ -26,6 +26,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -41,15 +43,25 @@ fun MealTypeScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val items by viewModel.items.collectAsState()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val savedMsg = stringResource(R.string.meal_type_saved)
     val deletedMsg = stringResource(R.string.meal_type_deleted)
     val errorMsg = stringResource(R.string.error_fill_all_fields)
+    val deleteBlockedMsg = stringResource(R.string.delete_meal_type_blocked)
+    val deleteFailedMsg = stringResource(R.string.delete_failed_try_again)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is MealTypeEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is MealTypeEvent.ShowSnackbar -> {
+                    if (event.message == savedMsg) {
+                        focusManager.clearFocus(force = true)
+                        keyboardController?.hide()
+                    }
+                    snackbarHostState.showSnackbar(event.message)
+                }
             }
         }
     }
@@ -60,7 +72,11 @@ fun MealTypeScreen(
             title = { Text(stringResource(R.string.delete_confirm_title)) },
             text = { Text(stringResource(R.string.delete_meal_type_confirm, item.name)) },
             confirmButton = {
-                TextButton(onClick = { viewModel.onDeleteConfirm(item, deletedMsg) }) {
+                TextButton(
+                    onClick = {
+                        viewModel.onDeleteConfirm(item, deletedMsg, deleteBlockedMsg, deleteFailedMsg)
+                    }
+                ) {
                     Text(stringResource(R.string.delete))
                 }
             },
@@ -107,6 +123,7 @@ fun MealTypeScreen(
         }
 
         items(items, key = { it.id }) { item ->
+            val isInUse = state.referencedMealTypeIds.contains(item.id)
             Card(modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier
@@ -115,16 +132,28 @@ fun MealTypeScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = item.name,
-                        style = MaterialTheme.typography.bodyLarge,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(onClick = { viewModel.onDeleteRequest(item) }) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = item.name,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        if (isInUse) {
+                            Text(
+                                text = stringResource(R.string.item_in_use_cannot_delete),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    IconButton(onClick = { viewModel.onDeleteRequest(item) }, enabled = !isInUse) {
                         Icon(
                             Icons.Default.Delete,
                             contentDescription = stringResource(R.string.delete),
-                            tint = MaterialTheme.colorScheme.error,
+                            tint = if (isInUse) {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            } else {
+                                MaterialTheme.colorScheme.error
+                            },
                         )
                     }
                 }

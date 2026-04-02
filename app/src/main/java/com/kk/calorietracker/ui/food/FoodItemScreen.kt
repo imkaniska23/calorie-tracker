@@ -31,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,15 +51,25 @@ fun FoodItemScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val items by viewModel.items.collectAsState()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val savedMsg = stringResource(R.string.food_item_saved)
     val deletedMsg = stringResource(R.string.food_item_deleted)
     val errorMsg = stringResource(R.string.error_fill_all_fields)
+    val deleteBlockedMsg = stringResource(R.string.delete_food_item_blocked)
+    val deleteFailedMsg = stringResource(R.string.delete_failed_try_again)
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is FoodEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is FoodEvent.ShowSnackbar -> {
+                    if (event.message == savedMsg) {
+                        focusManager.clearFocus(force = true)
+                        keyboardController?.hide()
+                    }
+                    snackbarHostState.showSnackbar(event.message)
+                }
             }
         }
     }
@@ -68,7 +80,11 @@ fun FoodItemScreen(
             title = { Text(stringResource(R.string.delete_confirm_title)) },
             text = { Text(stringResource(R.string.delete_food_item_confirm, item.name)) },
             confirmButton = {
-                TextButton(onClick = { viewModel.onDeleteConfirm(item, deletedMsg) }) {
+                TextButton(
+                    onClick = {
+                        viewModel.onDeleteConfirm(item, deletedMsg, deleteBlockedMsg, deleteFailedMsg)
+                    }
+                ) {
                     Text(stringResource(R.string.delete))
                 }
             },
@@ -193,6 +209,7 @@ fun FoodItemScreen(
         }
 
         items(items, key = { it.id }) { item ->
+            val isInUse = state.referencedFoodItemIds.contains(item.id)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -217,12 +234,23 @@ fun FoodItemScreen(
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
+                            if (isInUse) {
+                                Text(
+                                    text = stringResource(R.string.item_in_use_cannot_delete),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
                         }
-                        IconButton(onClick = { viewModel.onDeleteRequest(item) }) {
+                        IconButton(onClick = { viewModel.onDeleteRequest(item) }, enabled = !isInUse) {
                             Icon(
                                 Icons.Default.Delete,
                                 contentDescription = stringResource(R.string.delete),
-                                tint = MaterialTheme.colorScheme.error,
+                                tint = if (isInUse) {
+                                    MaterialTheme.colorScheme.onSurfaceVariant
+                                } else {
+                                    MaterialTheme.colorScheme.error
+                                },
                             )
                         }
                     }

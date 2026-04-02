@@ -40,6 +40,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -63,6 +65,8 @@ fun MealLogScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val logs by viewModel.logsForDate.collectAsState()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val savedMsg = stringResource(R.string.meal_log_saved)
     val deletedMsg = stringResource(R.string.meal_log_deleted)
@@ -71,7 +75,13 @@ fun MealLogScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is MealLogEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is MealLogEvent.ShowSnackbar -> {
+                    if (event.message == savedMsg) {
+                        focusManager.clearFocus(force = true)
+                        keyboardController?.hide()
+                    }
+                    snackbarHostState.showSnackbar(event.message)
+                }
             }
         }
     }
@@ -145,7 +155,6 @@ fun MealLogScreen(
             FoodItemDropdown(
                 query = state.foodSearchQuery,
                 options = state.filteredFoodItems,
-                onQueryChange = viewModel::onFoodSearchChange,
                 onSelect = viewModel::onFoodItemSelected,
             )
             Spacer(Modifier.height(8.dp))
@@ -356,7 +365,6 @@ private fun MealTypeDropdown(
 private fun FoodItemDropdown(
     query: String,
     options: List<com.kk.calorietracker.data.model.FoodItem>,
-    onQueryChange: (String) -> Unit,
     onSelect: (com.kk.calorietracker.data.model.FoodItem) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -366,7 +374,8 @@ private fun FoodItemDropdown(
     ) {
         OutlinedTextField(
             value = query,
-            onValueChange = { onQueryChange(it); expanded = true },
+            onValueChange = {},
+            readOnly = true,
             label = { Text(stringResource(R.string.food_item)) },
             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier

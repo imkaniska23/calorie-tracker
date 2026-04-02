@@ -18,6 +18,9 @@ interface FoodItemDao {
     @Query("SELECT * FROM food_item WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     fun searchFoodItems(query: String): Flow<List<FoodItemEntity>>
 
+    @Query("SELECT DISTINCT foodItemId FROM meal_log")
+    fun getReferencedFoodItemIds(): Flow<List<Long>>
+
     @Query("SELECT * FROM food_item WHERE id = :id")
     suspend fun getFoodItemById(id: Long): FoodItemEntity?
 

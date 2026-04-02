@@ -18,6 +18,9 @@ class FoodRepository @Inject constructor(
     fun searchFoodItems(query: String): Flow<List<FoodItem>> =
         dao.searchFoodItems(query).map { list -> list.map { it.toDomain() } }
 
+    fun getReferencedFoodItemIds(): Flow<Set<Long>> =
+        dao.getReferencedFoodItemIds().map { it.toSet() }
+
     suspend fun getFoodItemById(id: Long): FoodItem? =
         dao.getFoodItemById(id)?.toDomain()
 
