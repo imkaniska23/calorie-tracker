@@ -18,20 +18,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kk.calorietracker.R
+import kotlinx.coroutines.launch
 
 @Composable
 fun TargetsScreen(
+    onNavigateToTrends: () -> Unit,
     snackbarHostState: SnackbarHostState,
     modifier: Modifier = Modifier,
     viewModel: TargetsViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsState()
+    val scope = rememberCoroutineScope()
 
     val savedMsg = stringResource(R.string.targets_saved)
     val errorMsg = stringResource(R.string.error_fill_all_fields)
@@ -39,7 +43,12 @@ fun TargetsScreen(
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
             when (event) {
-                is TargetsEvent.ShowSnackbar -> snackbarHostState.showSnackbar(event.message)
+                is TargetsEvent.ShowSnackbar -> {
+                    scope.launch {
+                        snackbarHostState.showSnackbar(event.message)
+                    }
+                }
+                TargetsEvent.NavigateToTrends -> onNavigateToTrends()
             }
         }
     }

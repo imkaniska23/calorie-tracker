@@ -22,6 +22,7 @@ data class TargetsUiState(
 
 sealed interface TargetsEvent {
     data class ShowSnackbar(val message: String) : TargetsEvent
+    data object NavigateToTrends : TargetsEvent
 }
 
 @HiltViewModel
@@ -34,11 +35,12 @@ class TargetsViewModel @Inject constructor(
 
     private val _events = Channel<TargetsEvent>()
     val events = _events.receiveAsFlow()
+    private var didPrefillFromSavedTarget = false
 
     init {
         viewModelScope.launch {
             repository.getTarget().collect { target ->
-                if (target != null) {
+                if (target != null && !didPrefillFromSavedTarget) {
                     _state.update {
                         it.copy(
                             calories = target.calories.toString(),
@@ -47,6 +49,7 @@ class TargetsViewModel @Inject constructor(
                             proteinG = target.proteinG.toString(),
                         )
                     }
+                    didPrefillFromSavedTarget = true
                 }
             }
         }
@@ -80,6 +83,7 @@ class TargetsViewModel @Inject constructor(
                 )
             )
             _events.send(TargetsEvent.ShowSnackbar(savedMsg))
+            _events.send(TargetsEvent.NavigateToTrends)
         }
     }
 }

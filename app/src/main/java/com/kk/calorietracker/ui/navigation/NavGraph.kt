@@ -144,7 +144,14 @@ fun CalorieTrackerNavGraph() {
                 )
             }
             composable<TargetsRoute> {
-                TargetsScreen(snackbarHostState = snackbarHostState)
+                TargetsScreen(
+                    snackbarHostState = snackbarHostState,
+                    onNavigateToTrends = {
+                        navController.navigate(TrendsRoute) {
+                            launchSingleTop = true
+                        }
+                    },
+                )
             }
         }
     }
