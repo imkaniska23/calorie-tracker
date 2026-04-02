@@ -1,0 +1,95 @@
+<resources>
+    <string name="app_name">Calorie Tracker</string>
+
+    <!-- Navigation labels -->
+    <string name="nav_food">Foods</string>
+    <string name="nav_meal_types">Meal Types</string>
+    <string name="nav_log_meal">Log Meal</string>
+    <string name="nav_trends">Trends</string>
+
+    <!-- Screen titles -->
+    <string name="screen_food_items">Food Items</string>
+    <string name="screen_meal_types">Meal Types</string>
+    <string name="screen_log_meal">Log Meal</string>
+    <string name="screen_trends">Trends</string>
+    <string name="screen_targets">Daily Targets</string>
+
+    <!-- Food item form -->
+    <string name="food_item_name">Name</string>
+    <string name="measurement_unit">Measurement Unit</string>
+    <string name="unit_per_gram">per g</string>
+    <string name="unit_per_ml">per ml</string>
+    <string name="measurement_quantity">Quantity (e.g. 100)</string>
+    <string name="fat_g">Fat (g)</string>
+    <string name="carbs_g">Carbs (g)</string>
+    <string name="protein_g">Protein (g)</string>
+    <string name="food_item_saved">Food item saved</string>
+    <string name="food_item_deleted">Food item deleted</string>
+    <string name="food_items_empty">No food items yet. Add one above.</string>
+    <string name="per_quantity_unit">per %1$d%2$s</string>
+
+    <!-- Meal type form -->
+    <string name="meal_type_name">Meal Type Name</string>
+    <string name="meal_type_saved">Meal type saved</string>
+    <string name="meal_type_deleted">Meal type deleted</string>
+    <string name="meal_types_empty">No meal types yet. Add one above.</string>
+
+    <!-- Log meal form -->
+    <string name="date">Date</string>
+    <string name="meal_type">Meal Type</string>
+    <string name="food_item">Food Item</string>
+    <string name="quantity_with_unit">Quantity (%1$s)</string>
+    <string name="macro_preview">Macro Preview</string>
+    <string name="meal_total_preview">Meal Total</string>
+    <string name="add_food_to_meal">Add Food Item to Meal</string>
+    <string name="meal_items">Meal Items</string>
+    <string name="logged_quantity_value">Qty: %1$.0f</string>
+    <string name="todays_logs">Entries</string>
+    <string name="meal_log_saved">Meal logged</string>
+    <string name="meal_log_deleted">Log entry deleted</string>
+    <string name="meal_logs_empty">No entries for this date.</string>
+    <string name="log_meal_type_qty">%1$s · %2$.0fg</string>
+    <string name="save_meal">Save Meal</string>
+
+    <!-- Targets form -->
+    <string name="target_calories">Daily Calories (kcal)</string>
+    <string name="targets_saved">Targets saved</string>
+
+    <!-- Macro labels in MacroRow -->
+    <string name="macro_calories_value">%.0f kcal</string>
+    <string name="macro_fat_value">F: %.1fg</string>
+    <string name="macro_carbs_value">C: %.1fg</string>
+    <string name="macro_protein_value">P: %.1fg</string>
+
+    <!-- Trends -->
+    <string name="trends_tab_day">Day</string>
+    <string name="trends_tab_week">Week</string>
+    <string name="trends_tab_month">Month</string>
+    <string name="trends_week_title">Last 7 Days — Daily Calories</string>
+    <string name="trends_month_title">Last 30 Days — Daily Calories</string>
+    <string name="calories_by_meal_type">Calories by Meal Type</string>
+    <string name="macro_totals">Macro Totals</string>
+    <string name="vs_target">vs. Daily Target</string>
+    <string name="no_target_set">No daily target set yet.</string>
+    <string name="set_targets">Set Targets</string>
+    <string name="no_data_for_period">No data logged for this period.</string>
+
+    <!-- Progress labels -->
+    <string name="calories">Calories</string>
+    <string name="fat">Fat</string>
+    <string name="carbs">Carbs</string>
+    <string name="protein">Protein</string>
+    <string name="unit_kcal"> kcal</string>
+    <string name="unit_g">g</string>
+
+    <!-- Common -->
+    <string name="save">Save</string>
+    <string name="update">Update</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="delete_confirm_title">Confirm Delete</string>
+    <string name="delete_food_item_confirm">Delete \"%1$s\"?</string>
+    <string name="delete_meal_type_confirm">Delete \"%1$s\"?</string>
+    <string name="error_fill_all_fields">Please fill in all required fields.</string>
+</resources>
