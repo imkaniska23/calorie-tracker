@@ -53,13 +53,24 @@ class FoodRepositoryTest {
     }
 
     @Test
-    fun `saveFoodItem calls insert with correct entity`() = runTest {
+    fun `saveFoodItem inserts when id is zero`() = runTest {
+        val newFood = domain.copy(id = 0)
         coEvery { dao.insertFoodItem(any()) } returns 1L
+
+        val id = repository.saveFoodItem(newFood)
+
+        assertEquals(1L, id)
+        coVerify { dao.insertFoodItem(FoodItemEntity.fromDomain(newFood)) }
+    }
+
+    @Test
+    fun `saveFoodItem updates when id exists`() = runTest {
+        coEvery { dao.updateFoodItem(any()) } returns Unit
 
         val id = repository.saveFoodItem(domain)
 
-        assertEquals(1L, id)
-        coVerify { dao.insertFoodItem(FoodItemEntity.fromDomain(domain)) }
+        assertEquals(domain.id, id)
+        coVerify { dao.updateFoodItem(FoodItemEntity.fromDomain(domain)) }
     }
 
     @Test

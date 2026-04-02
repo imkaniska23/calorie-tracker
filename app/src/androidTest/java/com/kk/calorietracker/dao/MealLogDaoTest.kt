@@ -115,6 +115,29 @@ class MealLogDaoTest {
     }
 
     @Test
+    fun editingFoodItem_doesNotChangeSavedMealMacros() = runTest {
+        val today = LocalDate.now().toEpochDay()
+        mealLogDao.insertMealLog(log(today))
+
+        val currentFood = foodItemDao.getFoodItemById(foodItemId)!!
+        foodItemDao.updateFoodItem(
+            currentFood.copy(
+                fatG = 99.0,
+                carbsG = 99.0,
+                proteinG = 99.0,
+            )
+        )
+
+        mealLogDao.getLogsWithDetailsForDate(today).test {
+            val saved = awaitItem().first()
+            assertEquals(5.4, saved.fatG, 0.001)
+            assertEquals(0.0, saved.carbsG, 0.001)
+            assertEquals(46.5, saved.proteinG, 0.001)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
     fun deleteMealLog_removesEntry() = runTest {
         val today = LocalDate.now().toEpochDay()
         val id = mealLogDao.insertMealLog(log(today))

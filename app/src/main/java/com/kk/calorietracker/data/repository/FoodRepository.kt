@@ -21,8 +21,15 @@ class FoodRepository @Inject constructor(
     suspend fun getFoodItemById(id: Long): FoodItem? =
         dao.getFoodItemById(id)?.toDomain()
 
-    suspend fun saveFoodItem(foodItem: FoodItem): Long =
-        dao.insertFoodItem(FoodItemEntity.fromDomain(foodItem))
+    suspend fun saveFoodItem(foodItem: FoodItem): Long {
+        val entity = FoodItemEntity.fromDomain(foodItem)
+        return if (foodItem.id == 0L) {
+            dao.insertFoodItem(entity)
+        } else {
+            dao.updateFoodItem(entity)
+            foodItem.id
+        }
+    }
 
     suspend fun deleteFoodItem(foodItem: FoodItem) =
         dao.deleteFoodItem(FoodItemEntity.fromDomain(foodItem))
