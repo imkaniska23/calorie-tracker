@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -56,6 +57,15 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
+private data class GroupedMealLog(
+    val mealTypeName: String,
+    val foodItemsSummary: String,
+    val fatG: Double,
+    val carbsG: Double,
+    val proteinG: Double,
+    val latestLogId: Long,
+)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MealLogScreen(
@@ -71,6 +81,21 @@ fun MealLogScreen(
     val savedMsg = stringResource(R.string.meal_log_saved)
     val deletedMsg = stringResource(R.string.meal_log_deleted)
     val errorMsg = stringResource(R.string.error_fill_all_fields)
+    val groupedLogs = remember(logs) {
+        logs.groupBy { it.mealTypeId to it.mealTypeName }
+            .values
+            .map { mealLogs ->
+                GroupedMealLog(
+                    mealTypeName = mealLogs.first().mealTypeName,
+                    foodItemsSummary = mealLogs.map { it.foodItemName }.distinct().joinToString(", "),
+                    fatG = mealLogs.sumOf { it.fatG },
+                    carbsG = mealLogs.sumOf { it.carbsG },
+                    proteinG = mealLogs.sumOf { it.proteinG },
+                    latestLogId = mealLogs.maxOf { it.id },
+                )
+            }
+            .sortedByDescending { it.latestLogId }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.events.collect { event ->
@@ -289,35 +314,35 @@ fun MealLogScreen(
             }
         }
 
-        items(logs, key = { it.id }) { log ->
+        items(groupedLogs, key = { it.latestLogId }) { groupedLog ->
             Card(modifier = Modifier.fillMaxWidth()) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top,
+                        .padding(12.dp)
                 ) {
-                    Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = groupedLog.mealTypeName,
+                        style = MaterialTheme.typography.titleSmall,
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    Surface(
+                        shape = MaterialTheme.shapes.extraLarge,
+                        color = MaterialTheme.colorScheme.secondaryContainer,
+                    ) {
                         Text(
-                            text = log.foodItemName,
-                            style = MaterialTheme.typography.titleSmall,
-                        )
-                        Text(
-                            text = stringResource(R.string.log_meal_type_qty, log.mealTypeName, log.quantity),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(4.dp))
-                        MacroRow(fatG = log.fatG, carbsG = log.carbsG, proteinG = log.proteinG)
-                    }
-                    IconButton(onClick = { viewModel.onDeleteLog(log, deletedMsg) }) {
-                        Icon(
-                            Icons.Default.Delete,
-                            contentDescription = stringResource(R.string.delete),
-                            tint = MaterialTheme.colorScheme.error,
+                            text = groupedLog.foodItemsSummary,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
                         )
                     }
+                    Spacer(Modifier.height(8.dp))
+                    MacroRow(
+                        fatG = groupedLog.fatG,
+                        carbsG = groupedLog.carbsG,
+                        proteinG = groupedLog.proteinG,
+                    )
                 }
             }
         }
